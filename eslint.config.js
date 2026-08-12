@@ -24,6 +24,6 @@ module.exports = [
   },
   eslintConfigPrettier,
   {
-    ignores: ['node_modules/', 'coverage/'],
+    ignores: ['node_modules/', 'coverage/', 'src/db/migrations/'],
   },
 ];
