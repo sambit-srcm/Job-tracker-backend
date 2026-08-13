@@ -1,0 +1,276 @@
+openapi: 3.0.3
+info:
+  title: Job Tracker API
+  description: >
+    API for tracking job applications. Backs the `applications` table
+    and mirrors the request/response contract already expected by the
+    frontend's `src/api/jobs.js`.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+tags:
+  - name: Health
+    description: Service and dependency health checks
+  - name: Applications
+    description: CRUD operations on job applications
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness check
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is up
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /health/db:
+    get:
+      tags: [Health]
+      summary: Database connectivity check
+      operationId: getHealthDb
+      responses:
+        '200':
+          description: Database is reachable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: Database is unreachable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthError'
+
+  /applications:
+    get:
+      tags: [Applications]
+      summary: List all applications
+      operationId: listApplications
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Filter by application status
+          schema:
+            $ref: '#/components/schemas/ApplicationStatus'
+        - name: workType
+          in: query
+          required: false
+          description: Filter by work type
+          schema:
+            $ref: '#/components/schemas/WorkType'
+      responses:
+        '200':
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Application'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags: [Applications]
+      summary: Create an application
+      operationId: createApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationInput'
+      responses:
+        '201':
+          description: Application created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /applications/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ApplicationId'
+
+    get:
+      tags: [Applications]
+      summary: Get a single application
+      operationId: getApplication
+      responses:
+        '200':
+          description: The requested application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      tags: [Applications]
+      summary: Update an application (full replace)
+      operationId: updateApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationInput'
+      responses:
+        '200':
+          description: Application updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags: [Applications]
+      summary: Delete an application
+      operationId: deleteApplication
+      responses:
+        '204':
+          description: Application deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  parameters:
+    ApplicationId:
+      name: id
+      in: path
+      required: true
+      description: Application UUID
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    ValidationError:
+      description: Request failed validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Application not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: ok
+
+    HealthError:
+      type: object
+      required: [status, message]
+      properties:
+        status:
+          type: string
+          example: error
+        message:
+          type: string
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          example: company is required
+
+    ApplicationStatus:
+      type: string
+      enum: [Applied, Interviewing, Hired, Rejected]
+
+    WorkType:
+      type: string
+      enum: [Remote, Hybrid, Onsite]
+
+    ApplicationInput:
+      type: object
+      description: >
+        location is required unless workType is Remote (mirrors the
+        applications.location_required_unless_remote DB constraint and
+        the frontend's ApplicationForm validation).
+      required: [company, role, date]
+      properties:
+        company:
+          type: string
+          minLength: 1
+          maxLength: 255
+        role:
+          type: string
+          minLength: 1
+          maxLength: 255
+        status:
+          allOf:
+            - $ref: '#/components/schemas/ApplicationStatus'
+          default: Applied
+        workType:
+          allOf:
+            - $ref: '#/components/schemas/WorkType'
+          default: Remote
+        location:
+          type: string
+          maxLength: 255
+          nullable: true
+        date:
+          type: string
+          format: date
+          example: '2026-08-13'
+        notes:
+          type: string
+          default: ''
+
+    Application:
+      allOf:
+        - $ref: '#/components/schemas/ApplicationInput'
+        - type: object
+          required: [id, createdAt, updatedAt]
+          properties:
+            id:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
