@@ -1,9 +1,10 @@
 const { Pool } = require('pg');
 const { drizzle } = require('drizzle-orm/node-postgres');
 const schema = require('./schema');
+const { DATABASE_URL } = require('../config/env');
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: DATABASE_URL,
 });
 
 const db = drizzle(pool, { schema });
