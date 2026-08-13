@@ -3,6 +3,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 const { sql } = require('drizzle-orm');
 const { db } = require('./db/client');
+const routes = require('./routes');
+const { notFound, errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
 
@@ -23,5 +25,10 @@ app.get('/health/db', async (req, res) => {
     res.status(503).json({ status: 'error', message: error.message });
   }
 });
+
+app.use(routes);
+
+app.use(notFound);
+app.use(errorHandler);
 
 module.exports = app;
