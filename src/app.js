@@ -6,6 +6,7 @@ const { db } = require('./db/client');
 const routes = require('./routes');
 const { notFound, errorHandler } = require('./middlewares/errorHandler');
 const requestLogger = require('./middlewares/requestLogger');
+const { DEBUG_LOGGING } = require('./config/env');
 
 const app = express();
 
@@ -13,7 +14,10 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(requestLogger);
+// req.body may contain PII (notes, location) — only dumped to stdout when DEBUG_LOGGING is on
+if (DEBUG_LOGGING) {
+  app.use(requestLogger);
+}
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
