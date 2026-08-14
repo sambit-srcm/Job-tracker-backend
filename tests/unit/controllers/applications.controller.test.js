@@ -3,14 +3,7 @@ jest.mock('../../../src/services/applications.service');
 const applicationsService = require('../../../src/services/applications.service');
 const controller = require('../../../src/controllers/applications.controller');
 const ApiError = require('../../../src/utils/ApiError');
-
-function buildRes() {
-  const res = {};
-  res.status = jest.fn().mockReturnValue(res);
-  res.json = jest.fn().mockReturnValue(res);
-  res.send = jest.fn().mockReturnValue(res);
-  return res;
-}
+const buildRes = require('../../helpers/mockRes');
 
 describe('applications.controller', () => {
   describe('list', () => {
