@@ -22,6 +22,14 @@ module.exports = [
       'no-console': 'off',
     },
   },
+  {
+    files: ['tests/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+      },
+    },
+  },
   eslintConfigPrettier,
   {
     ignores: ['node_modules/', 'coverage/', 'src/db/migrations/'],
