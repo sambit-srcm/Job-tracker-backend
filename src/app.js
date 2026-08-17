@@ -6,10 +6,11 @@ const { db } = require('./db/client');
 const routes = require('./routes');
 const { notFound, errorHandler } = require('./middlewares/errorHandler');
 const requestLogger = require('./middlewares/requestLogger');
+const { CORS_ORIGIN } = require('./config/env');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: CORS_ORIGIN }));
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
