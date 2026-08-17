@@ -1,12 +1,6 @@
 const { notFound, errorHandler } = require('../../../src/middlewares/errorHandler');
 const ApiError = require('../../../src/utils/ApiError');
-
-function buildRes() {
-  const res = {};
-  res.status = jest.fn().mockReturnValue(res);
-  res.json = jest.fn().mockReturnValue(res);
-  return res;
-}
+const buildRes = require('../../helpers/mockRes');
 
 describe('notFound middleware', () => {
   it('responds 404 with an error payload', () => {

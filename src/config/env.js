@@ -8,4 +8,9 @@ const DEBUG_LOGGING = process.env.DEBUG_LOGGING
   ? process.env.DEBUG_LOGGING === 'true'
   : NODE_ENV !== 'production';
 
-module.exports = { PORT, DATABASE_URL, NODE_ENV, DEBUG_LOGGING };
+// Comma-separated list of allowed origins; defaults to the frontend's local Vite dev server.
+const CORS_ORIGIN = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
+  : ['http://localhost:5173'];
+
+module.exports = { PORT, DATABASE_URL, NODE_ENV, DEBUG_LOGGING, CORS_ORIGIN };
