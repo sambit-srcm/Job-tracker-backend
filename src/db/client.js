@@ -7,6 +7,6 @@ const pool = new Pool({
   connectionString: DATABASE_URL,
 });
 
-const db = drizzle(pool, { schema });
+const db = drizzle(pool, { schema, logger: true });
 
 module.exports = { db, pool };
